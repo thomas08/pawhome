@@ -1,0 +1,45 @@
+{
+  "agent": {
+    "model": "anthropic/claude-sonnet-4-20250514",
+    "workspace": "./openclaw",
+    "systemPrompt": "./openclaw/AGENTS.md"
+  },
+  "agents": {
+    "defaults": {
+      "skills": [
+        "dog-register",
+        "photo-describe",
+        "dog-namer",
+        "update-narrator",
+        "dog-matcher",
+        "adoption-handler"
+      ]
+    }
+  },
+  "channels": {
+    "telegram": {
+      "botToken": "${TELEGRAM_BOT_TOKEN}",
+      "allowFrom": ["*"],
+      "groups": {
+        "*": { "requireMention": true }
+      }
+    }
+  },
+  "cron": {
+    "dog-morning-update": {
+      "schedule": "0 8 * * *",
+      "message": "ถึงเวลาอัพเดทเช้าแล้วค่ะ! กรุณาสร้าง morning update สำหรับหมาทุกตัวที่มีสถานะ AVAILABLE หรือ IN_CARE โดยใช้ skill update-narrator และส่งให้ followers ทุกคนค่ะ"
+    },
+    "dog-evening-update": {
+      "schedule": "0 16 * * *",
+      "message": "ถึงเวลาอัพเดทเย็นแล้วค่ะ! กรุณาสร้าง evening update สำหรับหมาทุกตัวที่มีสถานะ AVAILABLE หรือ IN_CARE โดยใช้ skill update-narrator และส่งให้ followers ทุกคนค่ะ"
+    }
+  },
+  "tools": {
+    "exec": {
+      "allowed": ["tsx"],
+      "cwd": "${workspace}"
+    },
+    "browser": { "enabled": false }
+  }
+}

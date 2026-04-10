@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "outDir": "dist",
+    "rootDir": ".",
+    "paths": {
+      "@lib/*": ["./lib/*"]
+    }
+  },
+  "include": ["scripts/**/*", "lib/**/*"],
+  "exclude": ["node_modules", "web", "dist"]
+}

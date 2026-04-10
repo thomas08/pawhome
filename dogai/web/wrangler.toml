@@ -1,0 +1,38 @@
+name = "pawhome-web"
+main = ".open-next/worker.js"
+compatibility_date = "2024-12-01"
+compatibility_flags = ["nodejs_compat_v2"]
+
+assets = { directory = ".open-next/assets", binding = "ASSETS" }
+
+# Custom domain routing — maker-hub.net zone
+routes = [
+  { pattern = "dogs.maker-hub.net/*", zone_name = "maker-hub.net" }
+]
+
+# ─── Cloudflare Hyperdrive (PostgreSQL connection pooling) ───────────────────
+# เปิดใช้หลังจากสร้าง Hyperdrive:
+#   npx wrangler hyperdrive create pawhome-pg \
+#     --connection-string="postgresql://user:pass@host:5432/pawhome"
+# แล้ว uncomment บล็อกด้านล่างและใส่ ID ที่ได้
+[[hyperdrive]]
+binding = "HYPERDRIVE"
+id = "b651caaca6d8434799ae2b4a3ef8bee1"
+
+# ─── KV (ISR cache) ──────────────────────────────────────────────────────────
+# เปิดใช้หลังจากสร้าง KV namespace:
+#   npx wrangler kv namespace create NEXT_CACHE_WORKERS_KV
+# [[kv_namespaces]]
+# binding = "NEXT_CACHE_WORKERS_KV"
+# id = "YOUR_KV_NAMESPACE_ID"
+
+# ─── Environment Variables ───────────────────────────────────────────────────
+# Secrets ใส่ผ่าน: wrangler secret put <KEY>
+#   OPENCLAW_GATEWAY_TOKEN
+#   R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY
+#   DATABASE_URL  (ถ้าไม่ใช้ Hyperdrive)
+[vars]
+R2_BUCKET_NAME = "pawhome-photos"
+R2_PUBLIC_URL = "https://photos.maker-hub.net"
+NEXT_PUBLIC_SITE_URL = "https://dogs.maker-hub.net"
+NEXT_PUBLIC_TELEGRAM_BOT_URL = "https://t.me/PawHomeBot"

@@ -1,0 +1,170 @@
+// For dogai/scripts (OpenClaw helper scripts)
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+}
+
+// For dogai/web (Next.js — Cloudflare Pages)
+generator clientWeb {
+  provider        = "prisma-client-js"
+  output          = "../web/node_modules/.prisma/client"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  PUBLIC
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum DogStatus {
+  AVAILABLE
+  ADOPTED
+  IN_CARE
+  PENDING_ADOPTION
+}
+
+enum DogSize {
+  SMALL
+  MEDIUM
+  LARGE
+}
+
+enum DogGender {
+  MALE
+  FEMALE
+  UNKNOWN
+}
+
+model User {
+  id             String    @id @default(cuid())
+  telegramId     String    @unique
+  telegramHandle String?
+  name           String?
+  role           UserRole  @default(PUBLIC)
+  phone          String?
+  email          String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  follows        Follow[]
+  adoptions      Adoption[]
+
+  @@map("users")
+}
+
+model Dog {
+  id              String    @id @default(cuid())
+  name            String
+  nameOrigin      String?
+  breed           String?
+  estimatedAge    String?
+  gender          DogGender @default(UNKNOWN)
+  size            DogSize   @default(MEDIUM)
+  color           String?
+  weight          Float?
+  status          DogStatus @default(AVAILABLE)
+  description     String    @db.Text
+  personality     String?   @db.Text
+  healthNotes     String?   @db.Text
+  location        String?
+  registeredBy    String?
+  registeredAt    DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  photos          DogPhoto[]
+  follows         Follow[]
+  updates         DogUpdate[]
+  adoptions       Adoption[]
+  tags            DogTag[]
+
+  @@index([status])
+  @@map("dogs")
+}
+
+model DogPhoto {
+  id             String   @id @default(cuid())
+  dogId          String
+  url            String
+  telegramFileId String?
+  caption        String?  @db.Text
+  isMain         Boolean  @default(false)
+  source         String   @default("telegram")
+  takenAt        DateTime @default(now())
+  createdAt      DateTime @default(now())
+
+  dog            Dog      @relation(fields: [dogId], references: [id], onDelete: Cascade)
+
+  @@index([dogId])
+  @@map("dog_photos")
+}
+
+model Follow {
+  id             String   @id @default(cuid())
+  userId         String
+  dogId          String
+  notifyTelegram Boolean  @default(true)
+  createdAt      DateTime @default(now())
+
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dog            Dog      @relation(fields: [dogId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, dogId])
+  @@map("follows")
+}
+
+model DogUpdate {
+  id          String   @id @default(cuid())
+  dogId       String
+  photoUrl    String?
+  narrative   String   @db.Text
+  mood        String?
+  source      String   @default("ai_camera")
+  createdAt   DateTime @default(now())
+
+  dog         Dog      @relation(fields: [dogId], references: [id], onDelete: Cascade)
+
+  @@index([dogId])
+  @@index([createdAt])
+  @@map("dog_updates")
+}
+
+model Adoption {
+  id          String    @id @default(cuid())
+  dogId       String
+  userId      String
+  status      String    @default("pending")
+  reason      String?   @db.Text
+  adminNotes  String?   @db.Text
+  appliedAt   DateTime  @default(now())
+  resolvedAt  DateTime?
+
+  dog         Dog       @relation(fields: [dogId], references: [id])
+  user        User      @relation(fields: [userId], references: [id])
+
+  @@map("adoptions")
+}
+
+model DogTag {
+  id    String @id @default(cuid())
+  dogId String
+  tag   String
+
+  dog   Dog    @relation(fields: [dogId], references: [id], onDelete: Cascade)
+
+  @@unique([dogId, tag])
+  @@map("dog_tags")
+}
+
+model SystemConfig {
+  id    String @id @default(cuid())
+  key   String @unique
+  value String @db.Text
+
+  @@map("system_config")
+}
